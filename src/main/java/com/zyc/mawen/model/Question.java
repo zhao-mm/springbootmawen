@@ -1,5 +1,8 @@
 package com.zyc.mawen.model;
 
+import lombok.Data;
+
+@Data
 public class Question {
     private Integer id;
     private String title;
