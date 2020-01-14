@@ -51,4 +51,35 @@ public class QuestionService {
         return paginationDTO;
 
     }
+
+    public PaginationDTO listByUserId(Integer userId, Integer page, Integer size) {
+        PaginationDTO paginationDTO = new PaginationDTO();
+        Integer totalCount = questionMapper.countByUserId(userId);
+        paginationDTO.setPagination(totalCount, page, size);
+
+        if(page>paginationDTO.getTotalPage()){
+            page = paginationDTO.getTotalPage();
+        }
+        if(page<1){
+            page = 1;
+        }
+        //分页计算
+        Integer offset = size * (page - 1);
+
+        List<Question> questions = questionMapper.listByUserId(userId, offset, size);
+        List<QuestionDTO> questionDTOList = new ArrayList<>();
+
+        for(Question question : questions){
+            User user = userMapper.findById(question.getCreator());
+            QuestionDTO questionDTO = new QuestionDTO();
+            //复制question的元素到questionDTO
+            BeanUtils.copyProperties(question, questionDTO);//使用spring自带的工具，免去每个字段的get和set
+            questionDTO.setUser(user);
+            questionDTOList.add(questionDTO);
+        }
+        paginationDTO.setQuestions(questionDTOList);
+
+        return paginationDTO;
+
+    }
 }
