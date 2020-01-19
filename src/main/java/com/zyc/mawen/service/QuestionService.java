@@ -26,11 +26,13 @@ public class QuestionService {
         PaginationDTO paginationDTO = new PaginationDTO();
         Integer totalCount = questionMapper.count();
         paginationDTO.setPagination(totalCount, page, size);
-        if(page<1){
-            page = 1;
-        }
+        int countPage = page;
+
         if(page>paginationDTO.getTotalPage()){
             page = paginationDTO.getTotalPage();
+        }
+        if(page<1){
+            page = 1;
         }
         //分页计算
         Integer offset = size * (page - 1);
@@ -81,5 +83,27 @@ public class QuestionService {
 
         return paginationDTO;
 
+    }
+
+    public QuestionDTO getById(Integer id){
+        Question question = questionMapper.getById(id);
+        QuestionDTO questionDTO = new QuestionDTO();
+        BeanUtils.copyProperties(question, questionDTO);
+        User user = userMapper.findById(question.getCreator());
+        questionDTO.setUser(user);
+        return questionDTO;
+    }
+
+    public void createOrUpdate(Question question) {
+        if(question.getId() == null){
+            //创建
+            question.setGmtCreate(System.currentTimeMillis());
+            question.setGmtModified(question.getGmtCreate());
+            questionMapper.create(question);
+        }else{
+            //更新
+            question.setGmtModified(question.getGmtCreate());
+            questionMapper.update(question);
+        }
     }
 }

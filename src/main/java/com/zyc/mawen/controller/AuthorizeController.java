@@ -5,6 +5,7 @@ import com.zyc.mawen.dto.GithubUser;
 import com.zyc.mawen.mapper.UserMapper;
 import com.zyc.mawen.model.User;
 import com.zyc.mawen.provider.GithubProvider;
+import com.zyc.mawen.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -27,7 +28,8 @@ public class AuthorizeController {
     private String clientSecret;
     @Value("${github.redirect.uri}")
     private String redirectUri;
-
+    @Autowired
+    private UserService userService;
     @Autowired
     private UserMapper userMapper;
 
@@ -52,10 +54,8 @@ public class AuthorizeController {
             user.setToken(token);
             user.setAccountId(String.valueOf(githubUser.getId()));
             user.setName(githubUser.getName());
-            user.setGmtCreate(System.currentTimeMillis());
-            user.setGmtModified(user.getGmtCreate());
             user.setAvatarUrl(githubUser.getAvatarUrl());
-            userMapper.insert(user);
+            userService.createOrUpdate(user);
             response.addCookie(new Cookie("token", token));
             //request.getSession().setAttribute("user", githubUser);
             return "redirect:/";
@@ -65,5 +65,13 @@ public class AuthorizeController {
         }
 
     }
-
+    @GetMapping("/logout")
+    public String logout(HttpServletRequest request,
+                         HttpServletResponse response){
+        request.getSession().removeAttribute("user");
+        Cookie cookie = new Cookie("token", null);
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+        return "redirect:/";
+    }
 }
