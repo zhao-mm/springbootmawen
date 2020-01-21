@@ -2,6 +2,8 @@ package com.zyc.mawen.service;
 
 import com.zyc.mawen.dto.PaginationDTO;
 import com.zyc.mawen.dto.QuestionDTO;
+import com.zyc.mawen.exception.CustomizeErrorCode;
+import com.zyc.mawen.exception.CustomizeException;
 import com.zyc.mawen.mapper.QuestionMapper;
 import com.zyc.mawen.mapper.UserMapper;
 import com.zyc.mawen.model.Question;
@@ -10,6 +12,7 @@ import com.zyc.mawen.model.User;
 import org.apache.ibatis.session.RowBounds;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomNumberEditor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -96,6 +99,9 @@ public class QuestionService {
 
     public QuestionDTO getById(Integer id){
         Question question = questionMapper.selectByPrimaryKey(id);
+        if (question == null){
+            throw new CustomizeException(CustomizeErrorCode.QUESTION_NOT_FOUND);
+        }
         QuestionDTO questionDTO = new QuestionDTO();
         BeanUtils.copyProperties(question, questionDTO);
         User user = userMapper.selectByPrimaryKey(question.getCreator());
@@ -119,7 +125,10 @@ public class QuestionService {
             QuestionExample example = new QuestionExample();
             example.createCriteria()
                     .andIdEqualTo(question.getId());
-            questionMapper.updateByExampleSelective(updateQuestion, example);
+            int updated = questionMapper.updateByExampleSelective(updateQuestion, example);
+            if(updated != 1){
+                throw new CustomizeException(CustomizeErrorCode.QUESTION_NOT_FOUND);
+            }
         }
     }
 }
