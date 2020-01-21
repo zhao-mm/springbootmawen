@@ -4,6 +4,7 @@ import com.zyc.mawen.dto.PaginationDTO;
 import com.zyc.mawen.dto.QuestionDTO;
 import com.zyc.mawen.exception.CustomizeErrorCode;
 import com.zyc.mawen.exception.CustomizeException;
+import com.zyc.mawen.mapper.QuestionExtMapper;
 import com.zyc.mawen.mapper.QuestionMapper;
 import com.zyc.mawen.mapper.UserMapper;
 import com.zyc.mawen.model.Question;
@@ -26,6 +27,9 @@ public class QuestionService {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private QuestionExtMapper questionExtMapper;
 
     public PaginationDTO list(Integer page, Integer size) {
         PaginationDTO paginationDTO = new PaginationDTO();
@@ -130,5 +134,12 @@ public class QuestionService {
                 throw new CustomizeException(CustomizeErrorCode.QUESTION_NOT_FOUND);
             }
         }
+    }
+
+    public void incView(Integer id) {
+        Question question = new Question();
+        question.setId(id);
+        question.setViewCount(1);
+        questionExtMapper.incView(question);
     }
 }
